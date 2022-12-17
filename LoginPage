@@ -1,0 +1,142 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import java.awt.Dimension;
+
+
+public class LoginPage implements ActionListener {
+	static JFrame frame;
+	static JButton login, reset;
+	static JTextField userID;
+	static JPasswordField password;
+	static JLabel userId, userpassword, message;
+	static HashMap<String,String> log;
+	
+	public static void main(String[] args) {
+		LoginPage loginpage = new LoginPage();
+	}
+	
+	public void setElements() {
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (screenSize.width - frame.getWidth()) / 2;
+		int y = (screenSize.height - frame.getHeight()) / 2;
+		userId.setBounds(150, 250, 50, 30);
+		userpassword.setBounds(133, 300, 75, 30);
+		userID.setBounds(195, 253, 200, 25);
+		password.setBounds(195, 304, 200, 25);
+		message.setBounds(230,180,150,75);
+		login.setBounds(200, 350, 100, 25);
+		login.addActionListener(this);
+		reset.setBounds(300, 350, 100, 25);
+		reset.addActionListener(this);
+		frame.add(userId);
+		frame.add(userpassword);
+		frame.add(message);
+		frame.add(userID);
+		frame.add(password);
+		frame.add(login);
+		frame.add(reset);
+		//message.setBounds(130, 240, 240, 40);
+		message.setFont(new Font(null, Font.ITALIC, 25));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(500, 500);
+		frame.setLayout(null);
+		frame.setVisible(true);
+        frame.setLocation(x,y);
+//		frame.pack();
+		frame.setLocationRelativeTo(null);
+		login.addActionListener(this);
+	}
+	
+	
+	public LoginPage() {
+		frame = new JFrame();
+		login = new JButton("Login");
+		reset = new JButton("Reset");
+		userID = new JTextField();
+		password = new JPasswordField();
+		userId = new JLabel("UserId:");
+		userpassword = new JLabel("Password:");
+		message = new JLabel("Login Page");
+		log = getData();
+		setElements();
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == reset) {
+				userID.setText("");
+				password.setText("");
+				message.setForeground(Color.black);
+				message.setText("Login Page");
+				
+			}
+			if (e.getSource() == login) {
+				String userIDField = userID.getText();
+				String Password = String.valueOf(password.getPassword());
+				if (log.containsKey(userIDField)) {
+					if (log.get(userIDField).equals(Password)) {
+						message.setForeground(Color.blue);
+						message.setText("Login succesful");
+					}
+					else {
+						message.setForeground(Color.green);
+						message.setText("Wrong Password");
+					}
+				}
+				else {
+					message.setForeground(Color.red);
+					message.setText("User Not Found");
+				}
+			}
+	}
+	
+	public static HashMap<String,String> getData(){
+		HashMap<String,String> userNPass = new HashMap<String,String>();
+//		userNPass.put("admin", "1234");
+//		
+		String user="root";
+		String password="Hri031003";
+		Connection conn=null;
+		//Statement stmt = null;
+		
+		try{
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/loginsystem",user,password);
+			//stmt=conn.createStatement();
+			String sql="Select * from LoginPage";
+			Statement stmt = conn.createStatement();
+			ResultSet data = stmt.executeQuery(sql);
+			while(data.next()) {
+				userNPass.put(data.getString("UserID"),data.getString("Password"));
+			}
+//			System.out.println(data);
+			conn.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (conn!=null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return userNPass;
+	}
+}
